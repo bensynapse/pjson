@@ -196,7 +196,7 @@ func vany(json []byte, i int, dinfo int, f vfn) (oi int, ok, stop bool) {
 			if f != nil {
 				r := f(i, i+1, Object|Open|dinfo)
 				if r == 0 {
-					return i, true, true
+					return i + 1, true, true
 				}
 				if r == -1 {
 					f2 = nil
@@ -221,7 +221,7 @@ func vany(json []byte, i int, dinfo int, f vfn) (oi int, ok, stop bool) {
 			if f != nil {
 				r := f(i, i+1, Array|Open|dinfo)
 				if r == 0 {
-					return i, true, true
+					return i + 1, true, true
 				}
 				if r == -1 {
 					f2 = nil
@@ -312,7 +312,7 @@ func vobject(json []byte, i int, f vfn) (oi int, ok, stop bool) {
 			}
 			if f != nil {
 				if f(i, i+1, Comma) == 0 {
-					return i, true, true
+					return i + 1, true, true
 				}
 			}
 			i++
@@ -355,7 +355,7 @@ func varray(json []byte, i int, f vfn) (oi int, ok, stop bool) {
 			}
 			if f != nil {
 				if f(i, i+1, Comma) == 0 {
-					return i, true, true
+					return i + 1, true, true
 				}
 			}
 		}

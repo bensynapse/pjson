@@ -338,6 +338,42 @@ func TestReturnValues(t *testing.T) {
 	testreturnvalue(t, ` {"hel\y" : 1}`, -7)
 }
 
+func TestStoppedReturnValues(t *testing.T) {
+	for _, json := range []string{
+		`{}`, `[]`, `"hello"`, `123`, `true`, `false`, `null`,
+		`{"a":1,"b":2}`, `[1,2]`,
+		" \t{\"a\":[1,{\"b\":false}],\"c\":null}\n ",
+	} {
+		t.Run(json, func(t *testing.T) {
+			var ends []int
+			if got := Parse([]byte(json), 0, func(start, end, info int) int {
+				ends = append(ends, end)
+				return 1
+			}); got != len(json) {
+				t.Fatalf("complete parse returned %d, want %d", got, len(json))
+			}
+			for stopAt, want := range ends {
+				t.Run(fmt.Sprint(stopAt), func(t *testing.T) {
+					calls := 0
+					got := Parse([]byte(json), 0, func(start, end, info int) int {
+						calls++
+						if calls == stopAt+1 {
+							return 0
+						}
+						return 1
+					})
+					if got != want {
+						t.Fatalf("stopped parse returned %d, want callback end %d", got, want)
+					}
+					if calls != stopAt+1 {
+						t.Fatalf("callback ran %d times, want %d", calls, stopAt+1)
+					}
+				})
+			}
+		})
+	}
+}
+
 func testvalid(t *testing.T, json string, expect bool) {
 	t.Helper()
 	e := Parse([]byte(json), 0, nil)
